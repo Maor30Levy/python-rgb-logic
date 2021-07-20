@@ -52,19 +52,6 @@ enemies = [enemy1, enemy2, enemy3]
 running = True
 
 
-def validate_input(input, max_option, min_option):
-    if not (re.match('[0-9]', input) and int(input) <= max_option and int(input) > min_option):
-        print("Invalid input")
-        return False
-    return True
-
-
-def remove_dead_target(team, target_index):
-    target = team[target_index]
-    del team[target_index]
-    print(bcolors.FAIL+target.name+" has died."+bcolors.ENDC)
-
-
 def player_play(player):
     player.choose_action()
     choice = input("Choose action:")
@@ -169,6 +156,20 @@ def use_item(player):
     return True
 
 
+def enemy_play(enemy):
+    target_index = random.randrange(0, len(players))
+    action_index = random.randrange(0, 2)
+    pct = enemy.get_hp()/enemy.get_max_hp()
+    magicIndex = random.randrange(0, len(enemy.magic))
+    cost = enemy.magic[magicIndex].cost
+    if enemy.get_mp() > 50 and pct < 0.4:
+        enemy_cast_spell(enemy, 2)
+    elif enemy.get_mp() > cost and action_index == 1:
+        enemy_cast_spell(enemy, magicIndex)
+    else:
+        enemy_attack(target_index, enemy)
+
+
 def enemy_attack(target_index, enemey):
     target = players[target_index]
     attack(enemey, target)
@@ -180,6 +181,13 @@ def enemy_cast_spell(enemy, magicIndex):
     target_index = random.randrange(0, len(players))
     spell = enemy.magic[magicIndex]
     cast_spell(enemy, target_index, players, spell)
+
+
+def validate_input(input, max_option, min_option):
+    if not (re.match('[0-9]', input) and int(input) <= max_option and int(input) > min_option):
+        print("Invalid input")
+        return False
+    return True
 
 
 def attack(attacker, target):
@@ -206,27 +214,10 @@ def cast_spell(attacker, target_index, team, spell):
             remove_dead_target(team, target_index)
 
 
-def print_end_game_message():
-    if not is_team_alive(enemies):
-        print(bcolors.OKGREEN + bcolors.BOLD +
-              "The enemy is dead. You win!" + bcolors.ENDC)
-    else:
-        print(bcolors.FAIL + bcolors.BOLD +
-              "Your team died. The enemy won!" + bcolors.ENDC)
-
-
-def enemy_play(enemy):
-    target_index = random.randrange(0, len(players))
-    action_index = random.randrange(0, 2)
-    pct = enemy.get_hp()/enemy.get_max_hp()
-    magicIndex = random.randrange(0, len(enemy.magic))
-    cost = enemy.magic[magicIndex].cost
-    if enemy.get_mp() > 50 and pct < 0.4:
-        enemy_cast_spell(enemy, 2)
-    elif enemy.get_mp() > cost and action_index == 1:
-        enemy_cast_spell(enemy, magicIndex)
-    else:
-        enemy_attack(target_index, enemy)
+def remove_dead_target(team, target_index):
+    target = team[target_index]
+    del team[target_index]
+    print(bcolors.FAIL+target.name+" has died."+bcolors.ENDC)
 
 
 def print_stats():
@@ -242,27 +233,6 @@ def print_stats():
         print_enemy_stats(enemy.name, enemy.get_hp(), enemy.get_max_hp())
 
     print("\n")
-
-
-def get_bars(stat, max_stat):
-    bar = ""
-    i = 0
-    while i < max_stat:
-        if i < stat:
-            bar += "█"
-        else:
-            bar += " "
-        i += 1
-    return bar
-
-
-def get_spaces(spaces_length):
-    i = 0
-    spaces = ""
-    while i < spaces_length:
-        spaces += " "
-        i += 1
-    return spaces
 
 
 def print_player_stats(player_name, player_hp, player_max_hp, player_mp, player_max_mp, color):
@@ -297,6 +267,36 @@ def print_enemy_stats(player_name, player_hp, player_max_hp):
     print(bcolors.FAIL+bcolors.BOLD +
           "                             __________________________________________________              " + bcolors.ENDC)
     print(column1+column2)
+
+
+def get_bars(stat, max_stat):
+    bar = ""
+    i = 0
+    while i < max_stat:
+        if i < stat:
+            bar += "█"
+        else:
+            bar += " "
+        i += 1
+    return bar
+
+
+def get_spaces(spaces_length):
+    i = 0
+    spaces = ""
+    while i < spaces_length:
+        spaces += " "
+        i += 1
+    return spaces
+
+
+def print_end_game_message():
+    if not is_team_alive(enemies):
+        print(bcolors.OKGREEN + bcolors.BOLD +
+              "The enemy is dead. You win!" + bcolors.ENDC)
+    else:
+        print(bcolors.FAIL + bcolors.BOLD +
+              "Your team died. The enemy won!" + bcolors.ENDC)
 
 
 def is_team_alive(team):
